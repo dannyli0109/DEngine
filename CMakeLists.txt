@@ -7,9 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Set the directories for your project
 include_directories(include)
 include_directories(${PROJECT_SOURCE_DIR}/include/imgui) # Include the GLAD header
-include_directories(${PROJECT_SOURCE_DIR}/libs/glm)
+include_directories(${PROJECT_SOURCE_DIR}/libs/glm) # Ensure this is the correct path to the GLM library
 include_directories(${PROJECT_SOURCE_DIR}/libs/glfw/include) # GLFW include directory
-
+include_directories(${PROJECT_SOURCE_DIR}/libs/glad/include)
+include_directories(${PROJECT_SOURCE_DIR}/include/stb_image) 
 add_subdirectory(${PROJECT_SOURCE_DIR}/libs/glfw)
 
 # Find the required packages

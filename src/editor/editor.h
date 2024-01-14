@@ -6,13 +6,15 @@
 
 #include <iostream>
 #include <functional>
+#include "../renderer/window.h"
 
 namespace DEngine
 {
     class Editor
     {
     public:
-        using ImGuiRenderFunction = std::function<void()>;
+        using RenderFunction = std::function<void()>;
+        Window window = Window(800, 600, "Your Game Engine");
 
         Editor()
         {
@@ -28,27 +30,6 @@ namespace DEngine
 
         void init()
         {
-            // Initialize and configure GLFW
-            glfwInit();
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-            // Create a window object
-            window = glfwCreateWindow(800, 600, "Your Game Engine", NULL, NULL);
-            if (window == NULL)
-            {
-                std::cerr << "Failed to create GLFW window" << std::endl;
-                glfwTerminate();
-                exit(EXIT_FAILURE);
-            }
-            glfwMakeContextCurrent(window);
-            glfwSetFramebufferSizeCallback(window, Editor::framebufferSizeCallback);
-
             // Load all OpenGL function pointers using GLAD
             if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
             {
@@ -68,26 +49,23 @@ namespace DEngine
 
             // Setup Dear ImGui style
             ImGui::StyleColorsDark();
-            ImGui_ImplGlfw_InitForOpenGL(window, true);
+            ImGui_ImplGlfw_InitForOpenGL(window.window, true);
             ImGui_ImplOpenGL3_Init("#version 330");
         }
 
         void mainLoop()
         {
-            while (!glfwWindowShouldClose(window))
+            while (!window.shouldClose())
             {
-                glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-                glClear(GL_COLOR_BUFFER_BIT);
-
                 // External ImGui rendering logic is passed here
-                updateImGui(externalImGuiRenderLogic);
+                updateImGui(externalRenderLogic);
 
-                glfwSwapBuffers(window);
-                glfwPollEvents();
+                window.swapBuffers();
+                window.pollEvents();
             }
         }
 
-        void updateImGui(ImGuiRenderFunction externalRenderLogic)
+        void updateImGui(RenderFunction externalRenderLogic)
         {
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
@@ -106,9 +84,9 @@ namespace DEngine
             updateImGuiViewports();
         }
 
-        void setImGuiRenderLogic(ImGuiRenderFunction newRenderLogic)
+        void setRenderLogic(RenderFunction newRenderLogic)
         {
-            externalImGuiRenderLogic = newRenderLogic;
+            externalRenderLogic = newRenderLogic;
         }
 
         void shutdownImGui()
@@ -124,9 +102,7 @@ namespace DEngine
         }
 
     private:
-        GLFWwindow *window;
-        ImGuiRenderFunction externalImGuiRenderLogic;
-
+        RenderFunction externalRenderLogic;
         void updateImGuiViewports()
         {
             ImGuiIO &io = ImGui::GetIO();
