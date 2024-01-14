@@ -18,6 +18,13 @@ namespace DEngine
         glm::vec2 uv;
         float textureIndex;
     };
+
+    struct LineVertex
+    {
+        glm::vec3 position;
+        glm::vec4 color;
+    };
+
     class Renderer
     {
     public:
@@ -222,5 +229,149 @@ namespace DEngine
             {1, 0},
             {0, 1},
             {1, 1}};
+    };
+
+    class LineRenderer : public Renderer
+    {
+    public:
+        LineRenderer(Shader *shader, int batchSize)
+        {
+            this->shader = shader;
+            maxVertices = batchSize * 2;
+            maxIndices = batchSize * 2;
+
+            vertices.resize(maxVertices);
+            indices.resize(maxIndices);
+
+            int offset = 0;
+            for (int i = 0; i < maxIndices; i += 2)
+            {
+                indices[i + 0] = offset + 0;
+                indices[i + 1] = offset + 1;
+                offset += 2;
+            }
+
+            vertexBuffer = new VertexBuffer(maxVertices, sizeof(LineVertex));
+            indexBuffer = new IndexBuffer(indices.data(), maxIndices);
+            vertexArrayObject = new VertexArray();
+
+            vertexArrayObject->bind();
+            vertexBuffer->bind();
+            indexBuffer->bind();
+
+            vertexBuffer->setAttributePointers(
+                {{3, GL_FLOAT, sizeof(LineVertex), (const void *)offsetof(LineVertex, position)},
+                 {4, GL_FLOAT, sizeof(LineVertex), (const void *)offsetof(LineVertex, color)}});
+
+            VertexArray::unbind();
+            VertexBuffer::unbind();
+            IndexBuffer::unbind();
+        }
+        ~LineRenderer()
+        {
+            delete vertexBuffer;
+            delete indexBuffer;
+            delete vertexArrayObject;
+        }
+        LineRenderer(const LineRenderer &other) = delete;
+        LineRenderer &operator=(const LineRenderer &other) = delete;
+        LineRenderer(const LineRenderer &&other) = delete;
+        LineRenderer &operator=(const LineRenderer &&other) = delete;
+
+    public:
+        virtual void begin(Camera *camera) override
+        {
+            shader->use();
+            shader->setUniform("u_ProjectionMatrix", camera->getProjectionMatrix());
+            beginBatch();
+        }
+
+        virtual void flush() override
+        {
+            if (indexCount == 0)
+                return;
+            vertexBuffer->SetData(vertices.data(), sizeof(LineVertex), vertexCount);
+
+            vertexArrayObject->bind();
+            glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_SHORT, 0);
+
+            VertexArray::unbind();
+            VertexBuffer::unbind();
+            IndexBuffer::unbind();
+        }
+        virtual void beginBatch() override
+        {
+            indexCount = 0;
+            vertexCount = 0;
+            vertices.resize(maxVertices);
+        }
+        virtual void nextBatch() override
+        {
+            flush();
+            beginBatch();
+        }
+        virtual void end() override
+        {
+            flush();
+        }
+
+        void drawLine(const glm::vec3 &start, const glm::vec3 &end, const glm::vec4 &color = glm::vec4(1, 1, 1, 1))
+        {
+            if (indexCount >= maxIndices)
+            {
+                nextBatch();
+            }
+
+            vertices[vertexCount].position = start;
+            vertices[vertexCount].color = color;
+            vertexCount++;
+
+            vertices[vertexCount].position = end;
+            vertices[vertexCount].color = color;
+            vertexCount++;
+
+            indexCount += 2;
+        }
+
+        void drawCircle(const glm::vec3 &center, float size, int segmentCount = 64, const glm::vec4 &color = glm::vec4(1, 1, 1, 1))
+        {
+            float cosAngle = cos(2 * 3.14159f / segmentCount);
+            float sinAngle = sin(2 * 3.14159f / segmentCount);
+
+            glm::mat3 rotMat = {{cosAngle, -sinAngle, 0}, {sinAngle, cosAngle, 0}, {0, 0, 0}};
+
+            glm::vec3 plotPoint(0, size, 0);
+
+            for (int i = 0; i <= segmentCount; i++)
+            {
+                glm::vec3 p1 = center + plotPoint;
+                plotPoint = rotMat * plotPoint;
+                glm::vec3 p2 = center + plotPoint;
+                drawLine(p1, p2, color);
+            }
+        }
+
+        void drawSquare(const glm::vec3 &center, float size, const glm::vec4 &color = glm::vec4(1, 1, 1, 1))
+        {
+            glm::vec3 p1(center.x - size / 2, center.y - size / 2, center.z);
+            glm::vec3 p2(center.x + size / 2, center.y - size / 2, center.z);
+            glm::vec3 p3(center.x + size / 2, center.y + size / 2, center.z);
+            glm::vec3 p4(center.x - size / 2, center.y + size / 2, center.z);
+
+            drawLine(p1, p2, color);
+            drawLine(p2, p3, color);
+            drawLine(p3, p4, color);
+            drawLine(p4, p1, color);
+        }
+
+    private:
+        int maxVertices = 0;
+        int maxIndices = 0;
+
+        std::vector<LineVertex> vertices;
+        std::vector<unsigned short> indices;
+
+        int indexCount = 0;
+        int vertexCount = 0;
     };
 }
