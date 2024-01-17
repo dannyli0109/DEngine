@@ -25,6 +25,13 @@ namespace DEngine
         glm::vec4 color;
     };
 
+    struct Light
+    {
+        glm::vec3 position;
+        glm::vec3 color;
+        float intensity;
+    };
+
     class Renderer
     {
     public:
@@ -110,7 +117,24 @@ namespace DEngine
         {
             shader->use();
             shader->setUniform("u_ProjectionMatrix", camera->getProjectionMatrix());
+            for (int i = 0; i < lights.size(); i++)
+            {
+                std::stringstream lightPos;
+                lightPos << "u_Lights[" << i << "].position";
+                shader->setUniform(lightPos.str(), lights[i].position);
+                std::stringstream lightColor;
+                lightColor << "u_Lights[" << i << "].color";
+                shader->setUniform(lightColor.str(), lights[i].color);
+                std::stringstream lightIntensity;
+                lightIntensity << "u_Lights[" << i << "].intensity";
+                shader->setUniform(lightIntensity.str(), lights[i].intensity);
+            }
             beginBatch();
+        }
+
+        void addLights(const std::vector<Light> &lights)
+        {
+            this->lights = lights;
         }
 
         virtual void flush() override
@@ -189,9 +213,10 @@ namespace DEngine
             }
             indexCount += 6;
         }
-        void drawQuad(const glm::vec3 &position, Texture *texture, const glm::vec4 &tintColor = glm::vec4(1, 1, 1, 1), bool flipped = false)
+        void drawQuad(const glm::vec3 &position, const glm::vec3 &scale, Texture *texture, const glm::vec4 &tintColor = glm::vec4(1, 1, 1, 1), bool flipped = false)
         {
-            glm::mat4 transform = glm::translate(glm::mat4(1), position);
+            glm::mat4 transform = glm::scale(glm::mat4(1), scale);
+            transform = glm::translate(transform, position);
             drawQuad(transform, texture, tintColor, flipped);
         }
 
@@ -201,7 +226,11 @@ namespace DEngine
         }
         void drawQuad(const glm::vec3 &position, const glm::vec4 &tintColor)
         {
-            drawQuad(position, ResourceManager::getInstance()->getTexture(0), tintColor);
+            drawQuad(position, glm::vec3(1, 1, 1), ResourceManager::getInstance()->getTexture(0), tintColor);
+        }
+        void drawQuad(const glm::vec3 &position, const glm::vec3 &scale, const glm::vec4 &tintColor)
+        {
+            drawQuad(position, scale, ResourceManager::getInstance()->getTexture(0), tintColor);
         }
 
     private:
@@ -211,6 +240,7 @@ namespace DEngine
 
         std::vector<QuadVertex> vertices;
         std::vector<unsigned short> indices;
+        std::vector<Light> lights;
 
         int selectedTexture = 0;
         std::vector<Texture *> textureSlots;

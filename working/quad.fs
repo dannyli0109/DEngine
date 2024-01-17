@@ -9,6 +9,13 @@ flat in float v_TextureIndex;
 
 uniform sampler2D u_Textures[16];
 
+struct Light {
+    vec3 position;
+    vec3 color;
+	float intensity;
+    // Add other properties like intensity, attenuation, etc.
+};
+uniform Light u_Lights[10]; // Replace NUMBER_OF_LIGHTS with actual number
 
 void main()
 {
@@ -33,5 +40,23 @@ void main()
 		case 14: texColor *= texture(u_Textures[14], v_Uvs); break;
 		case 15: texColor *= texture(u_Textures[15], v_Uvs); break;
 	}
-	f_Color = texColor;
+    vec3 fragPos = v_Position;
+    vec3 resultIntensity = vec3(0.0, 0.0, 0.0);
+
+    for (int i = 0; i < 10; ++i) {
+        float distance = length(u_Lights[i].position - fragPos);
+        float attenuation = 1.0 / (1.0 + distance * distance); // Quadratic falloff
+
+        // Adjust light contribution
+        vec3 lightContribution = u_Lights[i].color * attenuation;
+        resultIntensity += lightContribution;
+    }
+
+    // Clamp the result to avoid over-brightening
+    // resultIntensity = min(resultIntensity, vec3(1.0)); // Ensures intensity doesn't exceed 1.0
+
+    // Gamma correction (optional, if working in linear color space)
+    resultIntensity = pow(resultIntensity, vec3(1.0/2.2));
+
+    f_Color = texColor * vec4(resultIntensity, 1.0);
 }

@@ -20,29 +20,36 @@ int main()
 
     glm::vec2 windowSize = editor.window.getSize();
     DEngine::Camera2D *camera = new DEngine::Camera2D({0, 0}, 4.0f, windowSize);
+    std::vector<DEngine::Light> lights;
+    for (int i = 0; i < 5; i++)
+    {
+        lights.push_back({glm::vec3(i - 5, 0, 0), glm::vec3(1, 1, 1), 1});
+    }
     editor.setRenderLogic(
         [&]()
         {
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
+
+            quadRenderer->addLights(lights);
             quadRenderer->begin(camera);
-            quadRenderer->drawQuad(glm::vec3(0, 0, 0), resourceManager->getTexture(0));
-            quadRenderer->drawQuad(glm::vec3(1, 0, 0), resourceManager->getTexture(1));
+            quadRenderer->drawQuad(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), resourceManager->getTexture(0));
             quadRenderer->end();
 
             lineRenderer->begin(camera);
-            for (int j = -10; j < 10; j++)
+            for (int i = 0; i < lights.size(); i++)
             {
-                for (int i = -10; i < 10; i++)
-                {
-                    lineRenderer->drawSquare(glm::vec3(i, j, 0), 1);
-                    lineRenderer->drawCircle(glm::vec3(i, j, 0), 0.5);
-                }
+                lineRenderer->drawCircle(lights[i].position, 0.1);
             }
             lineRenderer->end();
 
             ImGui::Begin("Hello, world!");
-            ImGui::Button("Look at this pretty button");
+
+            for (int i = 0; i < lights.size(); i++)
+            {
+                ImGui::SliderFloat3(("Light " + std::to_string(i)).c_str(), &lights[i].position[0], -5.0f, 5.0f, 0.1);
+            }
+
             ImGui::End();
         });
     editor.mainLoop();
