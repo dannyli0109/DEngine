@@ -10,7 +10,7 @@ namespace DEngine
     public:
         GLFWwindow *window;
         const unsigned int SCR_WIDTH = 800;
-        const unsigned int SCR_HEIGHT = 600;
+        const unsigned int SCR_HEIGHT = 300;
         std::string title = "Your Game Engine";
 
         Window(int width, int height, std::string title)
@@ -32,9 +32,7 @@ namespace DEngine
                 glfwTerminate();
                 return;
             }
-
-            // Make the window's context current
-            glfwMakeContextCurrent(window);
+            beginWindow();
         }
 
         bool shouldClose() const
@@ -55,6 +53,11 @@ namespace DEngine
         glm::vec2 getSize()
         {
             return glm::vec2(SCR_WIDTH, SCR_HEIGHT);
+        }
+
+        void beginWindow()
+        {
+            glfwMakeContextCurrent(window);
         }
 
         ~Window()

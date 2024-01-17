@@ -33,6 +33,7 @@ namespace DEngine
         virtual void beginBatch() = 0;
         virtual void nextBatch() = 0;
         virtual void end() = 0;
+        static int drawCalls;
 
     protected:
         Shader *shader;
@@ -124,6 +125,7 @@ namespace DEngine
             }
 
             vertexArrayObject->bind();
+            Renderer::drawCalls++;
             glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
 
             VertexArray::unbind();
@@ -293,6 +295,7 @@ namespace DEngine
             vertexBuffer->SetData(vertices.data(), sizeof(LineVertex), vertexCount);
 
             vertexArrayObject->bind();
+            Renderer::drawCalls++;
             glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_SHORT, 0);
 
             VertexArray::unbind();
@@ -374,4 +377,6 @@ namespace DEngine
         int indexCount = 0;
         int vertexCount = 0;
     };
+
 }
+int DEngine::Renderer::drawCalls = 0;

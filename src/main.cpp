@@ -8,6 +8,8 @@ int main()
     DEngine::ResourceManager *resourceManager = DEngine::ResourceManager::getInstance();
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glm::vec3 shadowOffset = glm::vec3(0.1f, -0.3f, 0); // adjust as needed
+    glm::vec4 shadowColor = glm::vec4(0, 0, 0, 0.5f);   // adjust as needed
 
     resourceManager->addTexture(new DEngine::Texture("./working/frame0.png"));
     resourceManager->addTexture(new DEngine::Texture("./working/wall.jpg"));
@@ -25,7 +27,10 @@ int main()
         {
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
+            DEngine::Renderer::drawCalls = 0;
             quadRenderer->begin(camera);
+            quadRenderer->drawQuad(glm::vec3(0, 0, 0) + shadowOffset, resourceManager->getTexture(0), shadowColor);
+            quadRenderer->drawQuad(glm::vec3(1, 0, 0) + shadowOffset, resourceManager->getTexture(1), shadowColor);
             quadRenderer->drawQuad(glm::vec3(0, 0, 0), resourceManager->getTexture(0));
             quadRenderer->drawQuad(glm::vec3(1, 0, 0), resourceManager->getTexture(1));
             quadRenderer->end();
@@ -36,13 +41,16 @@ int main()
                 for (int i = -10; i < 10; i++)
                 {
                     lineRenderer->drawSquare(glm::vec3(i, j, 0), 1);
-                    lineRenderer->drawCircle(glm::vec3(i, j, 0), 0.5);
+                    lineRenderer->drawCircle(glm::vec3(i, j, 0), 0.5, 64);
                 }
             }
             lineRenderer->end();
 
             ImGui::Begin("Hello, world!");
             ImGui::Button("Look at this pretty button");
+            char drawCallsStr[32];
+            sprintf(drawCallsStr, "%d", DEngine::Renderer::drawCalls);
+            ImGui::Text(drawCallsStr);
             ImGui::End();
         });
     editor.mainLoop();

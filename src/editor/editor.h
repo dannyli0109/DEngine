@@ -58,6 +58,7 @@ namespace DEngine
             while (!window.shouldClose())
             {
                 // External ImGui rendering logic is passed here
+                window.beginWindow();
                 updateImGui(externalRenderLogic);
 
                 window.swapBuffers();
