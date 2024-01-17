@@ -48,7 +48,7 @@ void main()
         float attenuation = 1.0 / (1.0 + distance * distance); // Quadratic falloff
 
         // Adjust light contribution
-        vec3 lightContribution = u_Lights[i].color * attenuation;
+        vec3 lightContribution = u_Lights[i].color * attenuation * u_Lights[i].intensity;
         resultIntensity += lightContribution;
     }
 
