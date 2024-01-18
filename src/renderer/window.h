@@ -11,7 +11,7 @@ namespace DEngine
         GLFWwindow *window;
         const unsigned int SCR_WIDTH = 800;
         const unsigned int SCR_HEIGHT = 300;
-        std::string title = "Your Game Engine";
+        std::string title = "";
 
         Window(int width, int height, std::string title)
             : SCR_WIDTH(width), SCR_HEIGHT(height), title(title)

@@ -174,7 +174,7 @@ namespace DEngine
         }
 
     public:
-        void drawQuad(const glm::mat4 &transform, Texture *texture, const glm::vec4 &tintColor = glm::vec4(1, 1, 1, 1), bool flipped = false)
+        void drawQuad(glm::vec4 quadPositions[], const glm::mat4 &transform, Texture *texture, const glm::vec4 &tintColor = glm::vec4(1, 1, 1, 1), bool flipped = false)
         {
             if (indexCount >= maxIndices)
             {
@@ -219,20 +219,49 @@ namespace DEngine
         {
             glm::mat4 transform = glm::scale(glm::mat4(1), scale);
             transform = glm::translate(transform, position);
-            drawQuad(transform, texture, tintColor, flipped);
+            glm::vec4 quadPositions[4] = {
+                {-0.5f, 0.5f, 0, 1.0f},
+                {0.5f, 0.5f, 0, 1.0f},
+                {-0.5f, -0.5f, 0, 1.0f},
+                {0.5f, -0.5f, 0, 1.0f}};
+            drawQuad(quadPositions, transform, texture, tintColor, flipped);
         }
 
         void drawQuad(const glm::mat4 &transform, const glm::vec4 &tintColor)
         {
-            drawQuad(transform, ResourceManager::getInstance()->getTexture(0), tintColor);
+            glm::vec4 quadPositions[4] = {
+                {-0.5f, 0.5f, 0, 1.0f},
+                {0.5f, 0.5f, 0, 1.0f},
+                {-0.5f, -0.5f, 0, 1.0f},
+                {0.5f, -0.5f, 0, 1.0f}};
+            drawQuad(quadPositions, transform, ResourceManager::getInstance()->getTexture(2), tintColor);
         }
         void drawQuad(const glm::vec3 &position, const glm::vec4 &tintColor)
         {
-            drawQuad(position, glm::vec3(1, 1, 1), ResourceManager::getInstance()->getTexture(0), tintColor);
+            drawQuad(position, glm::vec3(1, 1, 1), ResourceManager::getInstance()->getTexture(3), tintColor);
         }
         void drawQuad(const glm::vec3 &position, const glm::vec3 &scale, const glm::vec4 &tintColor)
         {
-            drawQuad(position, scale, ResourceManager::getInstance()->getTexture(0), tintColor);
+            drawQuad(position, scale, ResourceManager::getInstance()->getTexture(2), tintColor);
+        }
+        void drawQuad(const glm::vec4 &p1, const glm::vec4 &p2, const glm::vec4 &p3, const glm::vec4 &p4, Texture *texture, const glm::vec4 &tintColor)
+        {
+            glm::vec4 quadPositions[4] = {
+                p1,
+                p2,
+                p3,
+                p4};
+            drawQuad(quadPositions, glm::mat4(1), texture, tintColor);
+        }
+
+        void drawQuad(const glm::vec4 &p1, const glm::vec4 &p2, const glm::vec4 &p3, const glm::vec4 &p4, const glm::vec4 &tintColor)
+        {
+            glm::vec4 quadPositions[4] = {
+                p1,
+                p2,
+                p3,
+                p4};
+            drawQuad(quadPositions, glm::mat4(1), ResourceManager::getInstance()->getTexture(2), tintColor);
         }
 
     private:
@@ -250,11 +279,11 @@ namespace DEngine
         int indexCount = 0;
         int vertexCount = 0;
 
-        glm::vec4 quadPositions[4] = {
-            {-0.5f, 0.5f, 0, 1.0f},
-            {0.5f, 0.5f, 0, 1.0f},
-            {-0.5f, -0.5f, 0, 1.0f},
-            {0.5f, -0.5f, 0, 1.0f}};
+        // glm::vec4 quadPositions[4] = {
+        //     {-0.5f, 0.5f, 0, 1.0f},
+        //     {0.5f, 0.5f, 0, 1.0f},
+        //     {-0.5f, -0.5f, 0, 1.0f},
+        //     {0.5f, -0.5f, 0, 1.0f}};
 
         glm::vec2 quadUvs[4] = {
             {0, 0},
@@ -407,6 +436,5 @@ namespace DEngine
         int indexCount = 0;
         int vertexCount = 0;
     };
-
 }
 int DEngine::Renderer::drawCalls = 0;
