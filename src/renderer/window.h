@@ -9,12 +9,12 @@ namespace DEngine
     {
     public:
         GLFWwindow *window;
-        const unsigned int SCR_WIDTH = 800;
-        const unsigned int SCR_HEIGHT = 300;
+        unsigned int width = 800;
+        unsigned int height = 300;
         std::string title = "";
 
         Window(int width, int height, std::string title)
-            : SCR_WIDTH(width), SCR_HEIGHT(height), title(title)
+            : width(width), height(height), title(title)
         {
             // Initialize and configure GLFW
             glfwInit();
@@ -26,13 +26,19 @@ namespace DEngine
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
             // Create a windowed mode window and its OpenGL context
-            window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, title.c_str(), NULL, NULL);
+            window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
             if (!window)
             {
                 glfwTerminate();
                 return;
             }
             beginWindow();
+
+            glfwSetWindowPos(window, 0, 30);
+
+            glfwSwapInterval(1);
+
+            glfwSetWindowUserPointer(window, this);
         }
 
         bool shouldClose() const
@@ -52,7 +58,7 @@ namespace DEngine
 
         glm::vec2 getSize()
         {
-            return glm::vec2(SCR_WIDTH, SCR_HEIGHT);
+            return glm::vec2(width, height);
         }
 
         void beginWindow()

@@ -2,6 +2,7 @@
 #include "renderer/renderer.h"
 #include "renderer/resourceManager.h"
 #include "renderer/camera.h"
+#include "renderer/frameBuffer.h"
 int main()
 {
     DEngine::Editor editor;
@@ -25,6 +26,8 @@ int main()
 
     glm::vec2 windowSize = editor.window.getSize();
     DEngine::Camera2D *camera = new DEngine::Camera2D({0, 0}, 4.0f, windowSize);
+
+    DEngine::Framebuffer *framebuffer = new DEngine::Framebuffer(windowSize.x, windowSize.y);
     std::vector<DEngine::Light> lights;
     glm::vec4 quadPositions[4] = {
         {-0.5f, 0.5f, 0, 1.0f},
@@ -38,6 +41,11 @@ int main()
     editor.setRenderLogic(
         [&]()
         {
+            glClear(GL_COLOR_BUFFER_BIT);
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glViewport(0, 0, windowSize.x, windowSize.y);
+            ImGui::Begin("scene");
+            framebuffer->bind();
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
             DEngine::Renderer::drawCalls = 0;
@@ -90,6 +98,11 @@ int main()
                 lineRenderer->drawCircle(lights[i].position, 0.1);
             }
             lineRenderer->end();
+
+            DEngine::Framebuffer::unbind();
+            glClear(GL_COLOR_BUFFER_BIT);
+            ImGui::Image((ImTextureID)framebuffer->getTextureID(), {windowSize.x, windowSize.y}, ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::End();
 
             ImGui::Begin("Hello, world!");
 
