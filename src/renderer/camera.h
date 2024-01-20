@@ -26,7 +26,7 @@ namespace DEngine
 
         Camera2D(glm::vec2 position, float zoom, glm::vec2 windowSize)
         {
-            this->position = glm::vec3(position, 0.0f);
+            this->position = glm::vec3(position, 10.0f);
             this->zoomLevel = zoom;
             this->aspectRatio = windowSize.x / windowSize.y;
         }

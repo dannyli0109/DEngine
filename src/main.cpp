@@ -21,6 +21,8 @@ int main()
     DEngine::Shader *shadowShader = new DEngine::Shader("./working/shadow.vs", "./working/shadow.fs");
 
     DEngine::QuadRenderer *quadRenderer = new DEngine::QuadRenderer(quadShader, 1024);
+    DEngine::QuadRenderer *quadRenderer2 = new DEngine::QuadRenderer(quadShader, 1024);
+
     DEngine::LineRenderer *lineRenderer = new DEngine::LineRenderer(lineShader, 1024);
     DEngine::QuadRenderer *shadowRenderer = new DEngine::QuadRenderer(shadowShader, 1024);
 
@@ -34,7 +36,7 @@ int main()
         {0.5f, 0.5f, 0, 1.0f},
         {-0.5f, -0.5f, 0, 1.0f},
         {0.5f, -0.5f, 0, 1.0f}};
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 2; i++)
     {
         lights.push_back({glm::vec3(i * 10 - 5, 0, 0), glm::vec3(1, 1, 1), 0.5f});
     }
@@ -44,8 +46,8 @@ int main()
             glClear(GL_COLOR_BUFFER_BIT);
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             glViewport(0, 0, windowSize.x, windowSize.y);
-            ImGui::Begin("scene");
             framebuffer->bind();
+            ImGui::Begin("scene");
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
             DEngine::Renderer::drawCalls = 0;
@@ -53,11 +55,10 @@ int main()
             quadRenderer->addLights(lights);
             quadRenderer->begin(camera);
             quadRenderer->drawQuad(glm::vec3(0, 0, 0), glm::vec3(20, 20, 20), resourceManager->getTexture(2), glm::vec4(1, 1, 1, 1));
+            // quadRenderer->drawQuad(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), resourceManager->getTexture(0));
             quadRenderer->end();
 
             shadowRenderer->begin(camera);
-            // quadRenderer->drawQuad(glm::vec3(0, 0, 0) + shadowOffset, glm::vec3(1, 1, 1), resourceManager->getTexture(0), shadowColor);
-            // quadRenderer->drawQuad(glm::vec3(1, 0, 0) + shadowOffset, glm::vec3(1, 1, 1), resourceManager->getTexture(1), shadowColor);
             glm::vec4 pos = glm::vec4(0, 0, 0, 0);
             // get four corners of quad
             glm::vec4 topLeft = pos + glm::vec4(-0.5f, 0.5f, 0, 0);
@@ -87,10 +88,10 @@ int main()
             }
             shadowRenderer->end();
 
-            quadRenderer->begin(camera);
-            quadRenderer->drawQuad(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), resourceManager->getTexture(0));
-            // quadRenderer->drawQuad(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), resourceManager->getTexture(1));
-            quadRenderer->end();
+            quadRenderer2->begin(camera);
+            quadRenderer2->addLights(lights);
+            quadRenderer2->drawQuad(glm::vec3(0, 0, 1), glm::vec3(1, 1, 1), resourceManager->getTexture(0));
+            quadRenderer2->end();
 
             lineRenderer->begin(camera);
             for (int i = 0; i < lights.size(); i++)
@@ -100,7 +101,6 @@ int main()
             lineRenderer->end();
 
             DEngine::Framebuffer::unbind();
-            glClear(GL_COLOR_BUFFER_BIT);
             ImGui::Image((ImTextureID)framebuffer->getTextureID(), {windowSize.x, windowSize.y}, ImVec2(0, 1), ImVec2(1, 0));
             ImGui::End();
 
@@ -110,7 +110,7 @@ int main()
             {
                 ImGui::SliderFloat2(("Light " + std::to_string(i)).c_str(), &lights[i].position[0], -50.0f, 50.0f);
             }
-            ImGui::SliderFloat("Shadow Opacity", &shadowOpacity, 0.0f, 1.0f);
+            // ImGui::SliderFloat("Shadow Opacity", &shadowOpacity, 0.0f, 1.0f);
 
             ImGui::End();
         });
