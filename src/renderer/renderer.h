@@ -136,12 +136,6 @@ namespace DEngine
             vertexBuffer->bind();
             indexBuffer->bind();
 
-            vertexBuffer->setAttributePointers(
-                {{3, GL_FLOAT, sizeof(QuadVertex), (const void *)offsetof(QuadVertex, position)},
-                 {4, GL_FLOAT, sizeof(QuadVertex), (const void *)offsetof(QuadVertex, color)},
-                 {2, GL_FLOAT, sizeof(QuadVertex), (const void *)offsetof(QuadVertex, uv)},
-                 {1, GL_FLOAT, sizeof(QuadVertex), (const void *)offsetof(QuadVertex, textureIndex)}});
-
             VertexArray::unbind();
             VertexBuffer::unbind();
             IndexBuffer::unbind();
