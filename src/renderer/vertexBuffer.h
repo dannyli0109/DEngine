@@ -41,6 +41,13 @@ namespace DEngine
             unbind();
         }
 
+        void init(unsigned int vertexCount, GLsizeiptr size)
+        {
+            bind();
+            glBufferData(GL_ARRAY_BUFFER, vertexCount * size, nullptr, GL_DYNAMIC_DRAW);
+            unbind();
+        }
+
         ~VertexBuffer()
         {
             if (initialised)

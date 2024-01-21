@@ -130,18 +130,22 @@ namespace DEngine
                 lightIntensity << "u_Lights[" << i << "].intensity";
                 shader->setUniform(lightIntensity.str(), lights[i].intensity);
             }
+
+            vertexBuffer->init(maxVertices, sizeof(QuadVertex));
             vertexArrayObject->bind();
             vertexBuffer->bind();
             indexBuffer->bind();
-            for (int i = 0; i < textureSlotIndex; i++)
-            {
-                if (textureSlots[i])
-                {
-                    textureSlots[i]->bind(i);
-                }
-            }
-            vertexCount = 0;
-            indexCount = 0;
+
+            vertexBuffer->setAttributePointers(
+                {{3, GL_FLOAT, sizeof(QuadVertex), (const void *)offsetof(QuadVertex, position)},
+                 {4, GL_FLOAT, sizeof(QuadVertex), (const void *)offsetof(QuadVertex, color)},
+                 {2, GL_FLOAT, sizeof(QuadVertex), (const void *)offsetof(QuadVertex, uv)},
+                 {1, GL_FLOAT, sizeof(QuadVertex), (const void *)offsetof(QuadVertex, textureIndex)}});
+
+            VertexArray::unbind();
+            VertexBuffer::unbind();
+            IndexBuffer::unbind();
+
             beginBatch();
         }
 
@@ -164,9 +168,9 @@ namespace DEngine
             Renderer::drawCalls++;
             glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
 
-            VertexArray::unbind();
             VertexBuffer::unbind();
             IndexBuffer::unbind();
+            VertexArray::unbind();
         }
         virtual void beginBatch() override
         {

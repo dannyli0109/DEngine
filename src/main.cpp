@@ -4,6 +4,7 @@
 #include "renderer/camera.h"
 #include "renderer/frameBuffer.h"
 #include "renderer/utils.h"
+
 int main()
 {
     DEngine::Editor editor;
@@ -26,6 +27,7 @@ int main()
     DEngine::QuadRenderer *quadRenderer = new DEngine::QuadRenderer(quadShader, 1024);
     DEngine::LineRenderer *lineRenderer = new DEngine::LineRenderer(lineShader, 1024);
     DEngine::QuadRenderer *shadowRenderer = new DEngine::QuadRenderer(shadowShader, 1024);
+    DEngine::QuadRenderer *quadRenderer2 = new DEngine::QuadRenderer(quadShader, 1024);
 
     glm::vec2 windowSize = editor.window.getSize();
     DEngine::Camera2D *camera = new DEngine::Camera2D({0, 0}, 4.0f, windowSize);
@@ -41,30 +43,30 @@ int main()
     {
         lights.push_back({glm::vec3(i * 10 - 5, 0, 0), glm::vec3(1, 1, 1), 0.5f});
     }
-    glViewport(0, 0, windowSize.x, windowSize.y);
+    // glViewport(0, 0, windowSize.x, windowSize.y);
     editor.setRenderLogic(
         [&]()
         {
+            ImGui::Begin("scene");
+            ImVec2 size = ImGui::GetContentRegionAvail();
+
             glClear(GL_COLOR_BUFFER_BIT);
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             framebuffer->bind();
-            ImGui::Begin("scene");
-            ImVec2 size = ImGui::GetContentRegionAvail();
             if (size.x != windowSize.x || size.y != windowSize.y)
             {
-                glViewport(0, 0, size.x, size.y);
                 windowSize = {size.x, size.y};
                 framebuffer->create(windowSize.x, windowSize.y);
                 camera->setWindowSize(windowSize);
             }
+            glViewport(0, 0, size.x, size.y);
 
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
             DEngine::Renderer::drawCalls = 0;
 
             quadRenderer->addLights(lights);
             quadRenderer->begin(camera);
             quadRenderer->drawQuad(glm::vec3(0, 0, 0), glm::vec3(20, 20, 20), resourceManager->getTexture(2), glm::vec4(1, 1, 1, 1));
+            // quadRenderer->drawQuad(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), resourceManager->getTexture(1));
             quadRenderer->end();
 
             shadowRenderer->begin(camera);
@@ -105,7 +107,6 @@ int main()
             shadowRenderer->end();
 
             quadRenderer->begin(camera);
-            quadRenderer->addLights(lights);
             quadRenderer->drawQuad(glm::vec3(0, 0, 1), glm::vec3(1, 1, 1), resourceManager->getTexture(0));
             quadRenderer->end();
 

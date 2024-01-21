@@ -34,8 +34,23 @@ namespace DEngine
             }
             beginWindow();
 
-            glfwSetWindowPos(window, 0, 30);
+            // glfwSetWindowPos(window, 0, 30);
             glfwSetWindowUserPointer(window, this);
+
+            glfwSetWindowSizeCallback(window, [](GLFWwindow *window, int width, int height)
+                                      {
+                Window* win = static_cast<Window*>(glfwGetWindowUserPointer(window));
+                win->onWindowSizeChanged(window, width, height); });
+        }
+
+        void onWindowSizeChanged(GLFWwindow *window, int width, int height)
+        {
+            this->width = width;
+            this->height = height;
+
+            int framebufferWidth, framebufferHeight;
+            glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
+            glViewport(0, 0, framebufferWidth, framebufferHeight);
         }
 
         bool shouldClose() const

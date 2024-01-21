@@ -44,7 +44,6 @@ namespace DEngine
                 std::cout << "Frame Buffer failed to initialise" << std::endl;
                 destroy();
             }
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
         void destroy()

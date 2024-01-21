@@ -58,7 +58,6 @@ namespace DEngine
             while (!window.shouldClose())
             {
                 // External ImGui rendering logic is passed here
-                window.beginWindow();
                 updateImGui(externalRenderLogic);
 
                 window.swapBuffers();
@@ -95,11 +94,6 @@ namespace DEngine
             ImGui_ImplOpenGL3_Shutdown();
             ImGui_ImplGlfw_Shutdown();
             ImGui::DestroyContext();
-        }
-
-        static void framebufferSizeCallback(GLFWwindow *window, int width, int height)
-        {
-            glViewport(0, 0, width, height);
         }
 
     private:

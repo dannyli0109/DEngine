@@ -63,8 +63,16 @@ namespace DEngine
         int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
 
         if (val == 0)
-            return 0;             // colinear
-        return (val > 0) ? 1 : 2; // clock or counterclock wise
+            return 0; // colinear
+        else if (val > 0)
+            return 1; // clockwise
+        else if (val < 0)
+            return 2; // counterclockwise
+        else
+        {
+            std::cerr << "Unexpected value in orientation function: " << val << std::endl;
+            return 0; // default to colinear
+        }
     }
 
     // A function used by std::sort() to sort points with respect to the first point
@@ -72,8 +80,9 @@ namespace DEngine
     bool compare(const glm::vec2 &p1, const glm::vec2 &p2)
     {
         int o = orientation(p0, p1, p2);
+
         if (o == 0)
-            return (distSq(p0, p2) >= distSq(p0, p1));
+            return (distSq(p0, p2) > distSq(p0, p1));
         return (o == 2);
     }
 
@@ -99,7 +108,9 @@ namespace DEngine
         // A point p1 comes before p2 in sorted output if p2
         // has larger polar angle (in counterclockwise
         // direction) than p1
+
         p0 = points[0];
+
         std::sort(points.begin(), points.end(), compare);
 
         // If two or more points make same angle with p0,
