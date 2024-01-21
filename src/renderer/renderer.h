@@ -130,6 +130,18 @@ namespace DEngine
                 lightIntensity << "u_Lights[" << i << "].intensity";
                 shader->setUniform(lightIntensity.str(), lights[i].intensity);
             }
+            vertexArrayObject->bind();
+            vertexBuffer->bind();
+            indexBuffer->bind();
+            for (int i = 0; i < textureSlotIndex; i++)
+            {
+                if (textureSlots[i])
+                {
+                    textureSlots[i]->bind(i);
+                }
+            }
+            vertexCount = 0;
+            indexCount = 0;
             beginBatch();
         }
 

@@ -35,9 +35,6 @@ namespace DEngine
             beginWindow();
 
             glfwSetWindowPos(window, 0, 30);
-
-            glfwSwapInterval(1);
-
             glfwSetWindowUserPointer(window, this);
         }
 

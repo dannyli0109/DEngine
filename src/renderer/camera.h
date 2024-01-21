@@ -17,6 +17,10 @@ namespace DEngine
 
         virtual glm::mat4 getViewMatrix() const = 0;
         virtual glm::mat4 getProjectionMatrix() const = 0;
+        void setWindowSize(glm::vec2 windowSize)
+        {
+            aspectRatio = windowSize.x / windowSize.y;
+        }
     };
 
     class Camera2D : public Camera

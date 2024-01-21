@@ -3,6 +3,7 @@
 #include "renderer/resourceManager.h"
 #include "renderer/camera.h"
 #include "renderer/frameBuffer.h"
+#include "renderer/utils.h"
 int main()
 {
     DEngine::Editor editor;
@@ -15,14 +16,14 @@ int main()
     resourceManager->addTexture(new DEngine::Texture("./working/frame0.png"));
     resourceManager->addTexture(new DEngine::Texture("./working/wall.jpg"));
     resourceManager->addTexture(new DEngine::Texture("./working/white.png"));
+    std::vector<glm::vec2> convexHullPoints = DEngine::generateConvexHullPoints("./working/frame0.png");
+    std::vector<glm::vec2> hull = DEngine::convexHull(convexHullPoints, convexHullPoints.size());
 
     DEngine::Shader *quadShader = new DEngine::Shader("./working/quad.vs", "./working/quad.fs");
     DEngine::Shader *lineShader = new DEngine::Shader("./working/line.vs", "./working/line.fs");
     DEngine::Shader *shadowShader = new DEngine::Shader("./working/shadow.vs", "./working/shadow.fs");
 
     DEngine::QuadRenderer *quadRenderer = new DEngine::QuadRenderer(quadShader, 1024);
-    DEngine::QuadRenderer *quadRenderer2 = new DEngine::QuadRenderer(quadShader, 1024);
-
     DEngine::LineRenderer *lineRenderer = new DEngine::LineRenderer(lineShader, 1024);
     DEngine::QuadRenderer *shadowRenderer = new DEngine::QuadRenderer(shadowShader, 1024);
 
@@ -40,14 +41,23 @@ int main()
     {
         lights.push_back({glm::vec3(i * 10 - 5, 0, 0), glm::vec3(1, 1, 1), 0.5f});
     }
+    glViewport(0, 0, windowSize.x, windowSize.y);
     editor.setRenderLogic(
         [&]()
         {
             glClear(GL_COLOR_BUFFER_BIT);
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            glViewport(0, 0, windowSize.x, windowSize.y);
             framebuffer->bind();
             ImGui::Begin("scene");
+            ImVec2 size = ImGui::GetContentRegionAvail();
+            if (size.x != windowSize.x || size.y != windowSize.y)
+            {
+                glViewport(0, 0, size.x, size.y);
+                windowSize = {size.x, size.y};
+                framebuffer->create(windowSize.x, windowSize.y);
+                camera->setWindowSize(windowSize);
+            }
+
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
             DEngine::Renderer::drawCalls = 0;
@@ -55,7 +65,6 @@ int main()
             quadRenderer->addLights(lights);
             quadRenderer->begin(camera);
             quadRenderer->drawQuad(glm::vec3(0, 0, 0), glm::vec3(20, 20, 20), resourceManager->getTexture(2), glm::vec4(1, 1, 1, 1));
-            // quadRenderer->drawQuad(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), resourceManager->getTexture(0));
             quadRenderer->end();
 
             shadowRenderer->begin(camera);
@@ -72,13 +81,20 @@ int main()
                 bottomRight,
                 bottomLeft};
             static float shadowOpacity = 1.0f; // Initial value
+            glm::vec2 imageSize = glm::vec2(512, 512);
+            // Compute the scale factor
+            glm::vec2 scale = glm::vec2(1.0f / imageSize.x, -1.0f / imageSize.y);
 
-            for (int i = 0; i < 4; i++)
+            // Translate the points to the center of the screen
+            glm::vec2 translation = glm::vec2(-0.5f, 0.5f);
+            for (int i = 0; i < hull.size(); i++)
             {
                 DEngine::Light light = lights[0];
                 glm::vec4 quadVertex[4] = {};
-                glm::vec4 side = sides[i];
-                glm::vec4 nextSide = sides[(i + 1) % 4];
+                glm::vec2 p1 = hull[i] * scale + translation;
+                glm::vec2 p2 = hull[(i + 1) % hull.size()] * scale + translation;
+                glm::vec4 side = glm::vec4(p1, 0, 1);
+                glm::vec4 nextSide = glm::vec4(p2, 0, 1);
                 // setup quad vertex
                 quadVertex[0] = side;
                 quadVertex[1] = side + (side - glm::vec4(light.position, 0)) * 100.0f; // extend to the direction of light
@@ -88,15 +104,22 @@ int main()
             }
             shadowRenderer->end();
 
-            quadRenderer2->begin(camera);
-            quadRenderer2->addLights(lights);
-            quadRenderer2->drawQuad(glm::vec3(0, 0, 1), glm::vec3(1, 1, 1), resourceManager->getTexture(0));
-            quadRenderer2->end();
+            quadRenderer->begin(camera);
+            quadRenderer->addLights(lights);
+            quadRenderer->drawQuad(glm::vec3(0, 0, 1), glm::vec3(1, 1, 1), resourceManager->getTexture(0));
+            quadRenderer->end();
 
             lineRenderer->begin(camera);
             for (int i = 0; i < lights.size(); i++)
             {
                 lineRenderer->drawCircle(lights[i].position, 0.1);
+            }
+
+            for (int i = 0; i < hull.size(); i++)
+            {
+                glm::vec2 p1 = hull[i] * scale + translation;
+                glm::vec2 p2 = hull[(i + 1) % hull.size()] * scale + translation;
+                lineRenderer->drawLine(glm::vec3(p1, 0), glm::vec3(p2, 0), glm::vec4(1, 0, 0, 1));
             }
             lineRenderer->end();
 
@@ -105,12 +128,13 @@ int main()
             ImGui::End();
 
             ImGui::Begin("Hello, world!");
+            ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
 
             for (int i = 0; i < lights.size(); i++)
             {
-                ImGui::SliderFloat2(("Light " + std::to_string(i)).c_str(), &lights[i].position[0], -50.0f, 50.0f);
+                ImGui::DragFloat2(("Light " + std::to_string(i)).c_str(), &lights[i].position[0], 0.1f);
             }
-            // ImGui::SliderFloat("Shadow Opacity", &shadowOpacity, 0.0f, 1.0f);
+            ImGui::DragFloat("Shadow Opacity", &shadowOpacity, 0.1f);
 
             ImGui::End();
         });

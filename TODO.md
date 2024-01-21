@@ -1,2 +1,3 @@
-- Window resize
-- Framebuffer
+- [x] Window resize
+- [x] Framebuffer
+- [ ] Mutiple light shadow
