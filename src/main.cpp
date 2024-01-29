@@ -1,36 +1,17 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 #include "renderer/window.h"
 #include <iostream>
 
 int main(void)
 {
-    DEngine::Window *window;
     DEngine::initGlfw();
-    window = DEngine::createWindow(1280, 720, "Hello World");
+    DEngine::Window *window = DEngine::createWindow(1280, 720, "Hello World");
     // Setup ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;   // Enable Docking
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window->glfwWindow, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    DEngine::initImGui(window);
     // Load all OpenGL function pointers using GLAD
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
+    DEngine::initGlad();
 
     /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window->glfwWindow))
+    while (!DEngine::shouldCloseWindow(window))
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
