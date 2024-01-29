@@ -40,6 +40,10 @@ namespace DEngine
         virtual void beginBatch() = 0;
         virtual void nextBatch() = 0;
         virtual void end() = 0;
+        void translate(glm::vec3 translation)
+        {
+            transform = glm::translate(transform, translation);
+        }
         static int drawCalls;
 
     protected:
@@ -48,6 +52,7 @@ namespace DEngine
         VertexBuffer *vertexBuffer;
         IndexBuffer *indexBuffer;
         VertexArray *vertexArrayObject;
+        glm::mat4 transform = glm::mat4(1);
     };
 
     class QuadRenderer : public Renderer

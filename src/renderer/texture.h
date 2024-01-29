@@ -65,6 +65,13 @@ namespace DEngine
             glActiveTexture(GL_TEXTURE0 + textureUnit);
             glBindTexture(GL_TEXTURE_2D, id);
         }
+
+        static void bindID(int textureUnit, GLuint id)
+        {
+            glActiveTexture(GL_TEXTURE0 + textureUnit);
+            glBindTexture(GL_TEXTURE_2D, id);
+        }
+
         void destroy()
         {
             if (loadedSuccessfully)
