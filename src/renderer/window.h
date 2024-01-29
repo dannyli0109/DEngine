@@ -1,86 +1,51 @@
-// C++
 #include <GLFW/glfw3.h>
-#include <string>
-#include <glm.hpp>
+#include <stdlib.h>
 
 namespace DEngine
 {
-    class Window
+    typedef struct Window
     {
-    public:
-        GLFWwindow *window;
-        unsigned int width = 800;
-        unsigned int height = 300;
-        std::string title = "";
+        unsigned int width;
+        unsigned int height;
+        const char *title;
+        GLFWwindow *glfwWindow;
+    } Window;
 
-        Window(int width, int height, std::string title)
-            : width(width), height(height), title(title)
-        {
-            // Initialize and configure GLFW
-            glfwInit();
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    typedef struct ImguiContainer
+    {
+        ImGuiIO *io;
+        ImGuiContext *context;
+    } ImguiContainer;
 
-#ifdef __APPLE__
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-            // Create a windowed mode window and its OpenGL context
-            window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
-            if (!window)
-            {
-                glfwTerminate();
-                return;
-            }
-            beginWindow();
-
-            // glfwSetWindowPos(window, 0, 30);
-            glfwSetWindowUserPointer(window, this);
-
-            glfwSetWindowSizeCallback(window, [](GLFWwindow *window, int width, int height)
-                                      {
-                Window* win = static_cast<Window*>(glfwGetWindowUserPointer(window));
-                win->onWindowSizeChanged(window, width, height); });
-        }
-
-        void onWindowSizeChanged(GLFWwindow *window, int width, int height)
-        {
-            this->width = width;
-            this->height = height;
-
-            int framebufferWidth, framebufferHeight;
-            glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
-            glViewport(0, 0, framebufferWidth, framebufferHeight);
-        }
-
-        bool shouldClose() const
-        {
-            return glfwWindowShouldClose(window);
-        }
-
-        void swapBuffers()
-        {
-            glfwSwapBuffers(window);
-        }
-
-        void pollEvents()
-        {
-            glfwPollEvents();
-        }
-
-        glm::vec2 getSize()
-        {
-            return glm::vec2(width, height);
-        }
-
-        void beginWindow()
-        {
-            glfwMakeContextCurrent(window);
-        }
-
-        ~Window()
+    Window *createWindow(unsigned int width, unsigned int height, const char *title)
+    {
+        Window *window = (Window *)malloc(sizeof(Window));
+        window->width = width;
+        window->height = height;
+        window->title = title;
+        window->glfwWindow = glfwCreateWindow(width, height, title, NULL, NULL);
+        if (!window->glfwWindow)
         {
             glfwTerminate();
+            return NULL;
         }
-    };
+        glfwMakeContextCurrent(window->glfwWindow);
+        return window;
+    }
+
+    void destroyWindow(Window *window)
+    {
+        glfwDestroyWindow(window->glfwWindow);
+        free(window);
+    }
+
+    initGlfw()
+    {
+        if (!glfwInit())
+            return -1;
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    }
 }
