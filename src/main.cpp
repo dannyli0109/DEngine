@@ -1,22 +1,25 @@
 #include "renderer/window.h"
+#include "renderer/imgui_container.h"
 #include <iostream>
+#include "renderer/shader.h"
 
 int main(void)
 {
     DEngine::initGlfw();
     DEngine::Window *window = DEngine::createWindow(1280, 720, "Hello World");
     // Setup ImGui context
-    DEngine::initImGui(window);
+    DEngine::Imgui::initImgui(window);
     // Load all OpenGL function pointers using GLAD
     DEngine::initGlad();
+
+    // Create shader
+    DEngine::Shader *shader = DEngine::createShader("./working/quad.vs", "./working/quad.fs");
 
     /* Loop until the user closes the window */
     while (!DEngine::shouldCloseWindow(window))
     {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        // Start of ImGui rendering
+        DEngine::Imgui::beginImgui();
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -25,16 +28,7 @@ int main(void)
         ImGui::End();
 
         // End of ImGui rendering
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        ImGuiIO &io = ImGui::GetIO();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            GLFWwindow *backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
-        }
+        DEngine::Imgui::endImgui();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window->glfwWindow);
