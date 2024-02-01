@@ -154,4 +154,43 @@ namespace DEngine
         beginBatch(renderer);
     }
 
+    void addLights(QuadRenderer *renderer, std::vector<Light> &lights)
+    {
+        renderer->lights = lights;
+    }
+
+    void flush(QuadRenderer *renderer)
+    {
+        if (renderer->indexCount == 0)
+            return;
+
+        for (int i = 0; i < renderer->textureSlotIndex; i++)
+        {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, renderer->textureSlots[i]->id);
+        }
+
+        glBufferSubData(GL_ARRAY_BUFFER, 0, renderer->vertexCount * sizeof(QuadVertex), renderer->vertices.data());
+        glBindVertexArray(renderer->VAO);
+        glDrawElements(GL_TRIANGLES, renderer->indexCount, GL_UNSIGNED_SHORT, NULL);
+
+        for (int i = 0; i < renderer->textureSlotIndex; i++)
+        {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+
+        glBindVertexArray(0);
+    }
+
+    void endQuadRenderer(QuadRenderer *renderer)
+    {
+        flush(renderer);
+    }
+
+    void nextBatch(QuadRenderer *renderer)
+    {
+        endQuadRenderer(renderer);
+        beginBatch(renderer);
+    }
 }
