@@ -19,7 +19,7 @@ namespace DEngine
 
     Shader *createShader(const char *vertexPath, const char *fragmentPath)
     {
-        Shader *shader = (Shader *)malloc(sizeof(Shader));
+        Shader *shader = new Shader();
         shader->vertexPath = vertexPath;
         shader->fragmentPath = fragmentPath;
 
@@ -126,64 +126,37 @@ namespace DEngine
         glUseProgram(shader->id);
     }
 
-    void setBool(Shader *shader, const std::string &name, bool value)
-    {
-        glUniform1i(glGetUniformLocation(shader->id, name.c_str()), (int)value);
-    }
-
-    void setInt(Shader *shader, const std::string &name, int value)
+    void setInt(Shader *shader, std::string name, int value)
     {
         glUniform1i(glGetUniformLocation(shader->id, name.c_str()), value);
     }
 
-    void setFloat(Shader *shader, const std::string &name, float value)
+    void setMat4(Shader *shader, std::string name, glm::mat4 value)
     {
-        glUniform1f(glGetUniformLocation(shader->id, name.c_str()), value);
+        GLuint varloc = glGetUniformLocation(shader->id, name.c_str());
+        useShader(shader);
+        glUniformMatrix4fv(varloc, 1, GL_FALSE, &value[0][0]);
     }
 
-    void setVec2(Shader *shader, const std::string &name, const glm::vec2 &value)
+    void setVec3(Shader *shader, std::string name, glm::vec3 value)
     {
-        glUniform2fv(glGetUniformLocation(shader->id, name.c_str()), 1, &value[0]);
+        GLuint varloc = glGetUniformLocation(shader->id, name.c_str());
+        useShader(shader);
+        glUniform3fv(varloc, 1, &value[0]);
     }
 
-    void setVec2(Shader *shader, const std::string &name, float x, float y)
+    void setVec4(Shader *shader, std::string name, glm::vec4 value)
     {
-        glUniform2f(glGetUniformLocation(shader->id, name.c_str()), x, y);
+        GLuint varloc = glGetUniformLocation(shader->id, name.c_str());
+        useShader(shader);
+        glUniform4fv(varloc, 1, &value[0]);
     }
 
-    void setVec3(Shader *shader, const std::string &name, const glm::vec3 &value)
+    void setFloat(Shader *shader, std::string name, float value)
     {
-        glUniform3fv(glGetUniformLocation(shader->id, name.c_str()), 1, &value[0]);
-    }
-
-    void setVec3(Shader *shader, const std::string &name, float x, float y, float z)
-    {
-        glUniform3f(glGetUniformLocation(shader->id, name.c_str()), x, y, z);
-    }
-
-    void setVec4(Shader *shader, const std::string &name, const glm::vec4 &value)
-    {
-        glUniform4fv(glGetUniformLocation(shader->id, name.c_str()), 1, &value[0]);
-    }
-
-    void setVec4(Shader *shader, const std::string &name, float x, float y, float z, float w)
-    {
-        glUniform4f(glGetUniformLocation(shader->id, name.c_str()), x, y, z, w);
-    }
-
-    void setMat2(Shader *shader, const std::string &name, const glm::mat2 &mat)
-    {
-        glUniformMatrix2fv(glGetUniformLocation(shader->id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-    }
-
-    void setMat3(Shader *shader, const std::string &name, const glm::mat3 &mat)
-    {
-        glUniformMatrix3fv(glGetUniformLocation(shader->id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-    }
-
-    void setMat4(Shader *shader, const std::string &name, const glm::mat4 &mat)
-    {
-        glUniformMatrix4fv(glGetUniformLocation(shader->id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+        GLuint varloc = glGetUniformLocation(shader->id, name.c_str());
+        useShader(shader);
+        glUniform1f(varloc, value);
     }
 
     void destroyShader(Shader *shader)

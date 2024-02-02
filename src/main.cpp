@@ -2,6 +2,9 @@
 #include "renderer/imgui_container.h"
 #include <iostream>
 #include "renderer/shader.h"
+#include "renderer/renderer.h"
+#include "renderer/texture.h"
+#include "renderer/camera.h"
 
 int main(void)
 {
@@ -14,6 +17,23 @@ int main(void)
 
     // Create shader
     DEngine::Shader *shader = DEngine::createShader("./working/quad.vs", "./working/quad.fs");
+    DEngine::QuadRenderer *renderer = DEngine::createQuadRenderer(shader, 1024);
+
+    // Create texture
+    DEngine::Texture *texture = DEngine::createTexture("./working/frame0.png");
+
+    // Create camera
+    DEngine::Camera *camera = DEngine::createCamera2D({0, 0}, 0, {1280, 720});
+
+    // Create lights
+    std::vector<DEngine::Light> lights;
+
+    for (int i = 0; i < 2; i++)
+    {
+        lights.push_back({{i * 10 - 5, 0, 0},
+                          {1, 1, 1, 1},
+                          1.0f});
+    };
 
     /* Loop until the user closes the window */
     while (!DEngine::shouldCloseWindow(window))
@@ -22,6 +42,13 @@ int main(void)
         DEngine::Imgui::beginImgui();
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+        // Start of rendering
+        // DEngine::beginQuadRenderer(renderer, camera);
+        // DEngine::addLights(renderer, lights);
+        // DEngine::drawQuad(renderer, {0, 0, 0}, {1, 1, 1}, texture);
+        // DEngine::endQuadRenderer(renderer);
 
         ImGui::Begin("Hello, world!");
         ImGui::Text("This is some useful text.");

@@ -27,18 +27,17 @@ namespace DEngine
                 float nearClip;
                 float farClip;
             } camera3D;
-        }
+        };
 
-        CameraType type;
-    }
+        enum CameraType type;
+    };
 
-    Camera *
-    createCamera2D(glm::vec2 position, float zoom, glm::vec2 windowSize)
+    Camera *createCamera2D(glm::vec2 position, float zoom, glm::vec2 windowSize)
     {
         Camera *camera = (Camera *)malloc(sizeof(Camera));
         camera->type = CameraType::Camera2D;
         camera->position = glm::vec3(position, 10.0f);
-        camera->camera2D.aspectRatio = windowSize.x / windowSize.y;
+        camera->aspectRatio = windowSize.x / windowSize.y;
         camera->camera2D.zoom = zoom;
         return camera;
     }
@@ -49,15 +48,15 @@ namespace DEngine
         {
         case CameraType::Camera2D:
         {
-            float left = -camera->camera2D.aspectRatio * camera->camera2D.zoom;
-            float right = camera->camera2D.aspectRatio * camera->camera2D.zoom;
+            float left = -camera->aspectRatio * camera->camera2D.zoom;
+            float right = camera->aspectRatio * camera->camera2D.zoom;
             float bottom = -camera->camera2D.zoom;
             float top = camera->camera2D.zoom;
             return glm::ortho(left, right, bottom, top, -1.0f, 1.0f);
         }
         case CameraType::Camera3D:
         {
-            return glm::perspective(glm::radians(camera->camera3D.fieldOfView), camera->camera3D.aspectRatio, camera->camera3D.nearClip, camera->camera3D.farClip);
+            return glm::perspective(glm::radians(camera->camera3D.fieldOfView), camera->aspectRatio, camera->camera3D.nearClip, camera->camera3D.farClip);
         }
         }
     }
